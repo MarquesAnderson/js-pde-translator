@@ -30,6 +30,7 @@ inputFile = open("testInOut/testInput.js", "r")
 data = ""
 with inputFile as myInput:
     data = myInput.readlines()
+# as we see, it is loaded in an array
 print(data)
 inputFile.close()
 
@@ -37,21 +38,26 @@ inputFile.close()
 dataString = ""
 for section in data:
     dataString += section
+# now its a string
 print(dataString)
 
+# grabbing the length of the string so we can analyze our translation location later
 for letters in dataString:
     mainStringLength += 1
 
 
+# function for finding a keyword and determining our next steps
 def findkey(stringWithKey, output):
     holdingString = ""
     trimKey = -1
     global mastertrim
+    # loop over each character in the string
     for letter in stringWithKey:
         print("trimkey insude = " + str(trimKey))
         if trimKey < mastertrim:
             trimKey += 1
-
+        # if our position in the string is after parts we've already translated,
+        # add to our analysis string
         if trimKey >= mastertrim:
             holdingString += letter
             trimKey += 1
@@ -59,12 +65,14 @@ def findkey(stringWithKey, output):
             print("current view: " + holdingString)
             for key in keywords:
                 if holdingString == key:
+                    # when we find a key that matches what we analyze, determine how to find the name
                     if key == "var " or key == "/n var":
                         nameStop = "="
                         output += findname(stringWithKey, trimKey, nameStop) + "\n"
                         trimKey -= 1
                         holdingString = ""
 
+    # restart the process of analysis if we are not at the end of the string
     if trimKey < mainStringLength:
         print("Trimkey: " + str(trimKey))
         mastertrim = trimKey
@@ -73,12 +81,14 @@ def findkey(stringWithKey, output):
     return output
 
 
-
+# gather the name of the variable
 def findname(stringWithName, trimKey, namestop):
     withname = trimstring(stringWithName, trimKey)
     holdingstring = ""
     global mastertrim
+    # add letters to the name until we find the char that tells us to stop
     for letter in withname:
+        #
         if letter != namestop:
             holdingstring += letter
             trimKey += 1
@@ -86,10 +96,15 @@ def findname(stringWithName, trimKey, namestop):
             trimKey += 1
             holdingstring += letter
             break
+        if letter == ";":
+            trimKey += 1
+            mastertrim = trimKey
+            return "var" + holdingstring
     mastertrim = trimKey
     return findtype(stringWithName, trimKey, ";", holdingstring)
 
 
+# determine the type of the variable based on the data
 def findtype(stringWithType, trimkey, typestop, prevname):
     withtype = trimstring(stringWithType, trimkey)
     holdingstring = ""
@@ -119,6 +134,16 @@ def findtype(stringWithType, trimkey, typestop, prevname):
     # if . is found but no ", float
     if stripstring.find('"') == -1 < stripstring.find("."):
         typetype = "float"
+    # if "new" is found, then its an object, so copy object name as data type
+    if stripstring.find("new") > -1:
+        tempcut = ""
+        for letter in stripstring:
+            if tempcut.find("new ") == -1:
+                tempcut += letter
+            elif letter != "(":
+                typetype += letter
+            elif letter == "(":
+                break
     # otherwise, just keep the same?
     if typetype == "":
         typetype = "var"
@@ -130,10 +155,12 @@ def findtype(stringWithType, trimkey, typestop, prevname):
     return returnstring
 
 
+# run the process
 outputFile = findkey(dataString, outputFile)
 
 print("outputfile: " + "-" + outputFile + "-")
 
+# save the outcome to the output file
 outFile = open("testInOut/testOutput.pde", "w")
 outFile.write(outputFile)
 outFile.close()
