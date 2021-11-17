@@ -1,4 +1,3 @@
-// comment 1
 var x = 1.;// coment2
 var word = "69";
 var flo = 7.6;
