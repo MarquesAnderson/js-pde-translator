@@ -1,5 +1,23 @@
-int x = 50;
-String word = "69";
-float flo = 7.6;
-boolean bool = true;
-var ar = [];
+ class ClassName{
+
+    ClassName(arg1, arg2){
+
+         var prop1 = arg1;
+         var prop2 = arg2;
+         var prop3 = 5;
+
+    }
+
+    void d1(){
+
+        //do stuff
+
+    }
+
+    void d2(){
+
+        return 3;
+
+    }
+
+}
