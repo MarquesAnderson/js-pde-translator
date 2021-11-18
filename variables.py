@@ -139,7 +139,7 @@ def findname(stringWithName, trimKey, namestop):
             break
 
         if letter == ";":
-            trimKey += 1
+            trimKey -= 1
             mastertrim = trimKey
             return "var" + holdingstring
 
