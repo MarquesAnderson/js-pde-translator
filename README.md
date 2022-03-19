@@ -1,6 +1,6 @@
 # js-pde-translator
 
-The completed translator is now complied into "allTogether.py", utilizing the 3 translation parts mentioned below. Now begins my testing with more data!
+The completed translator is now complied into "allTogether.py", utilizing the 3 translation parts mentioned below. After some testing, the translator proves usable but far from perfect. Perhaps there are too many edge cases for coding intricasies, in addition to unknown causes for rare errors.
 
 #
 
