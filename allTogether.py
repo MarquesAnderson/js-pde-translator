@@ -2,11 +2,14 @@
 
 # change this variable to the location of input data on your device
 
-inputDataLocation = "testInOut/finalInput.js"
+inputDataLocation = "C:/Users/math2/Desktop/Coding/PE2/Particles.js"
+    # "testInOut/finalInput.js"
+
+
 
 # change this variable to the output destination on your device, strongly recommend not to overwrite any existing data
 
-outDestination = "testInOut/testOutput.pde"
+outDestination = "C:/Users/math2/Documents/Processing/NC/Particles.pde"
 
 # variables------------------------------------------------------------------------------------------------------------
 
@@ -66,6 +69,7 @@ def loadFileAsString(fileName, howToRead):
 outputFile = ""
 
 # tracker of position of our trim
+global mastertrim
 mastertrim = -1
 
 dataString = " " + loadFileAsString(inputDataLocation, "r")
@@ -77,12 +81,15 @@ mainStringLength = stringLength(dataString)
 # function for finding a keyword and determining our next steps
 def findkey(stringWithKey, output):
     # words to search for in the inputfile to begin a translation pattern
-    keywords = ["\nvar ", "\nlet ", "\nconst ", " var ", " let ", " const "]
+    keywords = ["\nvar ", "\nlet ", "\nconst ", " var ", " let ", " const ", "(var "]
 
     holdingString = ""
     trimKey = -1
     global mastertrim
-    mastertrim = -1
+#    print("master1: " + str(mastertrim))
+#    print("trim1: " + str(trimKey))
+    # if mastertrim <= trimKey:
+    # mastertrim = -1
 
     # loop over each character in the string
     for letter in stringWithKey:
@@ -120,10 +127,16 @@ def findkey(stringWithKey, output):
                     trimKey -= 1
                     holdingString = ""
 
+
+#    print("master2: " + str(mastertrim))
+#    print("trim2: " + str(trimKey))
     # restart the process of analysis if we are not at the end of the string
     if trimKey < mainStringLength:
         mastertrim = trimKey
+#        print("master3: " + str(mastertrim))
+#        print("trim3: " + str(trimKey))
         findkey(stringWithKey, output)
+
 
     output += holdingString
 
@@ -179,21 +192,6 @@ def findtype(stringWithType, trimkey, typestop, prevname):
 
     # all numbers means int
     stripstring = holdingstring.strip().strip(")").strip("(")
-    if stripstring.isdigit():
-        typetype = "int"
-
-    # if " is found, its a string
-    if stripstring.find('"') > -1:
-        typetype = "String"
-
-    # if true or false is found
-    if stripstring.find("true") > -1 or stripstring.find("false") > -1:
-        typetype = "boolean"
-
-    # if . is found but no ", float
-    if stripstring.find('"') == -1 < stripstring.find("."):
-        typetype = "float"
-
     # if "new" is found, then its an object, so copy object name as data type
     if stripstring.find("new") > -1:
         tempcut = ""
@@ -208,8 +206,23 @@ def findtype(stringWithType, trimkey, typestop, prevname):
             elif letter == "(":
                 break
 
+    elif stripstring.isdigit():
+        typetype = "int"
+
+    # if " is found, its a string
+    elif stripstring.find('"') > -1:
+        typetype = "String"
+
+    # if true or false is found
+    elif stripstring.find("true") > -1 or stripstring.find("false") > -1:
+        typetype = "boolean"
+
+    # if . is found but no ", float
+    elif stripstring.find('"') == -1 < stripstring.find("."):
+        typetype = "float"
+
     # otherwise, just keep the same?
-    if typetype == "":
+    elif typetype == "":
         typetype = "var"
 
     # put the strings together
@@ -229,7 +242,7 @@ def findFunctionKey(stringWithKey, output):
     holdingString = ""
     trimKey = -1
     global mastertrim
-    mastertrim = 0
+    # mastertrim = 0
 
     # loop over each character in the string
     for letter in stringWithKey:
@@ -307,8 +320,8 @@ def withinParen(mainString, trimKey):
 def findClass(stringWithKey, output):
     holdingString = ""
     trimKey = -1
+    willTranslate = False
     global mastertrim
-
     # loop over each character in the string
     for letter in stringWithKey:
         if trimKey < mastertrim:
@@ -344,6 +357,7 @@ def findClass(stringWithKey, output):
                             counter += 1
 
                 # when we find a key that matches what we analyze, determine how to find the name
+                willTranslate = True
                 output += key + findName(stringWithKey, trimKey)
 
                 trimKey -= 1
@@ -353,6 +367,10 @@ def findClass(stringWithKey, output):
     if trimKey < mainStringLength:
         mastertrim = trimKey
         findClass(stringWithKey, output)
+
+    if not willTranslate:
+        output += holdingString
+        mastertrim = mainStringLength
 
     return output
 
@@ -413,11 +431,11 @@ def translateWithin(stringWithinBrac, trimKey, className):
             holdingString = ""
 
         # we find "this.", replace with "var" so the variable translator can translate properly
-        if holdingString.find("this.") > -1:
+        #if holdingString.find("this.") > -1:
             # add " var " in place of " this. "
-            output += trimStringRight(holdingString, stringLength(holdingString) - stringLength("this."))
-            output += " var "
-            holdingString = ""
+            #output += trimStringRight(holdingString, stringLength(holdingString) - stringLength("this."))
+            #output += " var "
+            #holdingString = ""
 
         # we find "(" while not within another method- beginning of new method
         if letter == "(" and matchingParenCount == 2:
@@ -447,12 +465,16 @@ def translateWithin(stringWithinBrac, trimKey, className):
 
     return output
 
+
 # trying ---------------------------------------------------------------------------------------------------------------
 
-
 # run the process
+print("mainStringLength " + str(mainStringLength))
+print("master " + str(mastertrim))
+
 outputString = ""
 outputString = trimStringLeft(findClass(dataString, outputString), 1)
+print("master " + str(mastertrim))
 
 # save the outcome to the output file
 outFile = open(outDestination, "w")
@@ -461,18 +483,21 @@ outFile.close()
 
 dataString = " " + loadFileAsString(outDestination, "r")
 outputString = ""
-
-outputString = trimStringLeft(findFunctionKey(dataString, outputString), 1)
-
-# save the outcome to the output file
-outFile = open(outDestination, "w")
-outFile.write(outputString)
-outFile.close()
-
-dataString = " " + loadFileAsString(outDestination, "r")
-outputString = ""
-
+mastertrim = -1
 outputString = trimStringLeft(findkey(dataString, outputString), 1)
+print("master " + str(mastertrim))
+
+# save the outcome to the output file
+outFile = open(outDestination, "w")
+outFile.write(outputString)
+outFile.close()
+
+dataString = " " + loadFileAsString(outDestination, "r")
+outputString = ""
+print("master " + str(mastertrim))
+mastertrim = 0
+outputString = trimStringLeft(findFunctionKey(dataString, outputString), 1)
+print("master " + str(mastertrim))
 
 # save the outcome to the output file
 outFile = open(outDestination, "w")
